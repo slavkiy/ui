@@ -14,6 +14,10 @@ func NewMemo[T any](compute func() T) *Memo[T] { return &Memo[T]{compute: comput
 
 // Get computes the value once and returns the cached result.
 func (m *Memo[T]) Get() T {
-	m.once.Do(func() { m.value = m.compute() })
+	m.once.Do(func() {
+		if m.compute != nil {
+			m.value = m.compute()
+		}
+	})
 	return m.value
 }

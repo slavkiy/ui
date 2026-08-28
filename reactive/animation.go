@@ -26,6 +26,9 @@ var (
 
 // Animate moves a float64 signal to target over duration and returns a cancellable subscription.
 func Animate(signal *Signal[float64], target float64, duration time.Duration, easing Easing) *Subscription {
+	if signal == nil {
+		return &Subscription{}
+	}
 	if easing == nil {
 		easing = Linear
 	}

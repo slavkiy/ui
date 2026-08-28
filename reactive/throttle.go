@@ -7,6 +7,9 @@ import (
 
 // Throttle creates a signal that emits source values at most once per duration.
 func Throttle[T any](source *Signal[T], duration time.Duration) *Signal[T] {
+	if source == nil {
+		return NewSignal[T]("", *new(T))
+	}
 	result := NewSignal("", source.Get())
 	var mu sync.Mutex
 	var lastTime time.Time

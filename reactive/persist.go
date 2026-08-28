@@ -3,6 +3,9 @@ package reactive
 // Persist creates a signal initialized from storage and saves subsequent values.
 func Persist[T any](storage Storage, key string, defaultValue T) *Signal[T] {
 	value := defaultValue
+	if storage == nil {
+		return NewSignal("", value)
+	}
 	if err := storage.Get(key, &value); err != nil {
 		value = defaultValue
 	}

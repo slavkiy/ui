@@ -1,23 +1,28 @@
 package reactive
 
-import "sync"
+import (
+	"sync"
+)
 
 var (
 	// Signals stores signals registered by name.
-	Signals   = make(map[string]any)
+	signals   = make(map[string]any)
 	signalsMu sync.RWMutex
 )
 
 // GetSignal returns the named signal when it has the requested type.
-func GetSignal[T any](name string) (*Signal[T], bool) {
+func GetSignal[T any](name string) *Signal[T] {
 	signalsMu.RLock()
 	defer signalsMu.RUnlock()
-	value, ok := Signals[name]
+	value, ok := signals[name]
 	if !ok {
-		return nil, false
+		return nil
 	}
 	signal, ok := value.(*Signal[T])
-	return signal, ok
+	if !ok {
+		return nil
+	}
+	return signal
 }
 
 // Signal stores a mutable value and notifies subscribers when it changes.
@@ -37,7 +42,7 @@ type Signal[T any] struct {
 func NewSignal[T any](name string, value T) *Signal[T] {
 	s := &Signal[T]{value: value, listeners: make(map[uint64]func(T)), channels: make(map[uint64]chan T), effects: make(map[uint64]func(T))}
 	signalsMu.Lock()
-	Signals[name] = s
+	signals[name] = s
 	signalsMu.Unlock()
 	return s
 }

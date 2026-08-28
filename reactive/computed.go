@@ -17,7 +17,10 @@ type Dependency interface{ SubscribeEffect(func()) *Subscription }
 
 // NewComputed creates a computed value and subscribes it to its dependencies.
 func NewComputed[T any](compute func() T, dependencies ...Dependency) *Computed[T] {
-	c := &Computed[T]{compute: compute, value: compute(), listeners: make(map[uint64]func(T))}
+	c := &Computed[T]{compute: compute, listeners: make(map[uint64]func(T))}
+	if compute != nil {
+		c.value = compute()
+	}
 	for _, dependency := range dependencies {
 		if dependency != nil {
 			c.dependencies = append(c.dependencies, dependency.SubscribeEffect(c.recompute))
@@ -34,6 +37,9 @@ func (c *Computed[T]) Get() T {
 }
 
 func (c *Computed[T]) recompute() {
+	if c.compute == nil {
+		return
+	}
 	value := c.compute()
 	c.mu.Lock()
 	c.value = value
@@ -68,5 +74,8 @@ func (c *Computed[T]) Subscribe(fn func(T)) *Subscription {
 
 // SubscribeEffect registers a callback that runs after recomputation.
 func (c *Computed[T]) SubscribeEffect(fn func()) *Subscription {
+	if fn == nil {
+		return &Subscription{}
+	}
 	return c.Subscribe(func(T) { fn() })
 }

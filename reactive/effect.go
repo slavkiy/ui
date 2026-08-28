@@ -19,5 +19,8 @@ func (s *Signal[T]) Effect(fn func(T)) *Subscription {
 
 // SubscribeEffect registers a callback that runs when the signal changes.
 func (s *Signal[T]) SubscribeEffect(fn func()) *Subscription {
+	if fn == nil {
+		return &Subscription{}
+	}
 	return s.Effect(func(T) { fn() })
 }

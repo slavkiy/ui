@@ -14,6 +14,9 @@ type Undoable[T any] struct {
 
 // NewUndoable creates an undoable wrapper around a signal.
 func NewUndoable[T any](signal *Signal[T]) *Undoable[T] {
+	if signal == nil {
+		signal = NewSignal[T]("", *new(T))
+	}
 	return &Undoable[T]{signal: signal, history: []T{signal.Get()}, recording: true}
 }
 
