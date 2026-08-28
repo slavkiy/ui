@@ -41,9 +41,11 @@ type Signal[T any] struct {
 // NewSignal creates a signal with an initial value and registers it by name.
 func NewSignal[T any](name string, value T) *Signal[T] {
 	s := &Signal[T]{value: value, listeners: make(map[uint64]func(T)), channels: make(map[uint64]chan T), effects: make(map[uint64]func(T))}
-	signalsMu.Lock()
-	signals[name] = s
-	signalsMu.Unlock()
+	if name == "" {
+		signalsMu.Lock()
+		signals[name] = s
+		signalsMu.Unlock()
+	}
 	return s
 }
 

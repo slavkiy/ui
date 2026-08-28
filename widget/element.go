@@ -1,19 +1,14 @@
 package widget
 
-import (
-	"context"
-
-	"github.com/slavkiy/ui/reactive"
-)
-
-type Widget interface {
-	Build(ctx *context.Context) Widget
+type ElementInterface interface {
+	Align(...Alignment) ElementInterface
 }
 
 type Element struct {
-	Widget   Widget
-	Parent   *Element
-	Children []*Element
+	Alignment Alignment
+}
 
-	Subscriptions []*reactive.Subscription
+func (e *Element) Align(a ...Alignment) *Element {
+	e.Alignment = Align(a...)
+	return e
 }
