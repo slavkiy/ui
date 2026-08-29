@@ -10,14 +10,14 @@ import (
 	. "github.com/slavkiy/ui/reactive"
 )
 
-type Text struct {
+type TextSignal struct {
 	Text *Signal[string]
 }
 
 func TestReactive(t *testing.T) {
 	name := NewSignal("name", "John")
 
-	text := Text{
+	text := TextSignal{
 		Text: name,
 	}
 
@@ -30,7 +30,7 @@ func TestReactive(t *testing.T) {
 	var wg sync.WaitGroup
 	wg.Add(1)
 
-	go func(text *Text, ctx context.Context) {
+	go func(text *TextSignal, ctx context.Context) {
 		defer wg.Done()
 
 		sub := text.Text.Subscribe(func(value string) {
