@@ -3,15 +3,18 @@ package widget
 type Alignment uint8
 
 const (
-	Left  Alignment = 1 << iota // 0001
-	Up                          // 0010
-	Right                       // 0100
-	Down                        // 1000
+	Center Alignment = 0
+	Left   Alignment = 1 << iota
+	Up
+	Right
+	Down
 )
 
-const Center Alignment = 0
-
 func align(a, b Alignment) Alignment {
+	if b == Center {
+		return Center
+	}
+
 	result := a
 
 	if b&Left != 0 {
