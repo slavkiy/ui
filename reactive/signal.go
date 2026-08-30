@@ -1,6 +1,7 @@
 package reactive
 
 import (
+	"context"
 	"reflect"
 	"strings"
 	"sync"
@@ -206,4 +207,41 @@ func (s *Signal[T]) SubscribeChan(bufferSize uint) (<-chan T, *Subscription) {
 		}
 		s.mu.Unlock()
 	}}
+}
+
+// Channel creates a context-bound channel that streams signal values until the context ends.
+func (s *Signal[T]) Channel(ctx context.Context, bufferSize uint) <-chan T {
+	if s == nil {
+		ch := make(chan T)
+		close(ch)
+		return ch
+	}
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	out := make(chan T, bufferSize)
+	sub := s.Subscribe(func(value T) {
+		select {
+		case <-ctx.Done():
+			return
+		default:
+			select {
+			case out <- value:
+			default:
+				select {
+				case <-ctx.Done():
+					return
+				default:
+					<-out
+					out <- value
+				}
+			}
+		}
+	})
+	go func() {
+		<-ctx.Done()
+		sub.Unsubscribe()
+		close(out)
+	}()
+	return out
 }

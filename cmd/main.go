@@ -8,7 +8,7 @@ import (
 func main() {
 	app := ui.NewApp()
 
-	ui.State(
+	app.State(
 		Column(
 			Text("Hello").Align(Up, Left),
 		).Align(Center),

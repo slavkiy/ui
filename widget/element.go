@@ -1,5 +1,7 @@
 package widget
 
+import "math"
+
 type Kind uint8
 
 const (
@@ -54,6 +56,26 @@ func NewElement(kind Kind, Layer int16, children ...Widget) *Element {
 			Layer:   Layer,
 		},
 	}
+}
+
+func ResolvePercent(percent int16, viewport int) int {
+	if viewport <= 0 {
+		return 0
+	}
+	if percent <= 0 {
+		return 0
+	}
+	if percent >= 100 {
+		return viewport
+	}
+	return int(math.Round(float64(percent) / 100.0 * float64(viewport)))
+}
+
+func (e *Element) ResolveSize(viewportWidth, viewportHeight int) (int, int) {
+	if e == nil {
+		return 0, 0
+	}
+	return ResolvePercent(e.Props.Width, viewportWidth), ResolvePercent(e.Props.Height, viewportHeight)
 }
 
 func (e *Element) Align(a ...Alignment) *Element {
