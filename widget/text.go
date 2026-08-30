@@ -22,6 +22,26 @@ func (t *textWidget[T]) Align(a ...Alignment) *textWidget[T] {
 }
 
 func (t *textWidget[T]) Layer(layer int16) *textWidget[T] {
-	t.element.Layer = layer
+	t.element.Props.Layer = layer
+	return t
+}
+
+func (t *textWidget[T]) Visible(v bool) *textWidget[T] {
+	t.element.Visible(v)
+	return t
+}
+
+func (t *textWidget[T]) Clip(v bool) *textWidget[T] {
+	t.element.Clip(v)
+	return t
+}
+
+func (t *textWidget[T]) Opacity(v float32) *textWidget[T] {
+	t.element.Opacity(v)
+	return t
+}
+
+func (t *textWidget[T]) Size(width, height int16) *textWidget[T] {
+	t.element.Size(width, height)
 	return t
 }
