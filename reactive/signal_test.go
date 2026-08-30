@@ -59,3 +59,23 @@ func TestSignalConcurrentUse(t *testing.T) {
 	}
 	wg.Wait()
 }
+
+func TestSignalNilableValueDoesNotPanic(t *testing.T) {
+	var value any = nil
+	if value != nil {
+		t.Fatal("unexpected non-nil value")
+	}
+
+	// The key should be generated without dereferencing a nil type.
+	if got := signalTypeKey("", "", value); got != "" {
+		t.Fatalf("expected empty key when both scope and name are blank, got %q", got)
+	}
+
+	if got := signalTypeKey("app", "demo", value); got != "app::demo:<nil>" {
+		t.Fatalf("expected nil-safe key, got %q", got)
+	}
+
+	if got := NewSignal("demo-nil", (*int)(nil)); got == nil {
+		t.Fatal("expected signal to be created")
+	}
+}

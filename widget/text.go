@@ -3,21 +3,28 @@ package widget
 import "github.com/slavkiy/ui/reactive"
 
 type textWidget[T string | *reactive.Signal[string]] struct {
-	element *Element
-	text    T
+	element      *Element
+	text         T
+	positionText Alignment
 }
 
 func (textWidget[T]) Widget() {}
 
 func Text[T string | *reactive.Signal[string]](value T) *textWidget[T] {
 	return &textWidget[T]{
-		element: NewElement(kindText, 0, nil),
-		text:    value,
+		element:      NewElement(kindText, 0, nil),
+		text:         value,
+		positionText: Align(Center),
 	}
 }
 
 func (t *textWidget[T]) Align(a ...Alignment) *textWidget[T] {
 	t.element.Align(a...)
+	return t
+}
+
+func (t *textWidget[T]) AlignText(a ...Alignment) *textWidget[T] {
+	t.positionText = Align(a...)
 	return t
 }
 

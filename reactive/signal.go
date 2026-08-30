@@ -32,12 +32,33 @@ func signalKey(scope, name string) string {
 	return scope + "::" + name
 }
 
+func signalTypeOf[T any]() reflect.Type {
+	var zero T
+	if reflect.TypeOf(zero) != nil {
+		return reflect.TypeOf(zero)
+	}
+	return reflect.TypeOf((*T)(nil)).Elem()
+}
+
 func signalTypeKey(scope, name string, t any) string {
 	key := signalKey(scope, name)
 	if key == "" {
 		return ""
 	}
-	return key + ":" + reflect.TypeOf(t).String()
+	if t == nil {
+		return key + ":<nil>"
+	}
+	if typ, ok := t.(reflect.Type); ok {
+		if typ == nil {
+			return key + ":<nil>"
+		}
+		return key + ":" + typ.String()
+	}
+	typ := reflect.TypeOf(t)
+	if typ == nil {
+		return key + ":<nil>"
+	}
+	return key + ":" + typ.String()
 }
 
 // GetSignal returns the named signal when it has the requested type.
@@ -47,8 +68,7 @@ func GetSignal[T any](name string) *Signal[T] {
 
 // GetSignalInScope returns a signal by explicit scope, e.g. app/internal::name.
 func GetSignalInScope[T any](scope, name string) *Signal[T] {
-	var zero T
-	key := signalTypeKey(scope, name, zero)
+	key := signalTypeKey(scope, name, signalTypeOf[T]())
 	signalsMu.RLock()
 	defer signalsMu.RUnlock()
 	value, ok := signals[key]
@@ -84,8 +104,7 @@ func NewSignal[T any](name string, value T) *Signal[T] {
 func NewSignalInScope[T any](scope, name string, value T) *Signal[T] {
 	s := &Signal[T]{value: value, listeners: make(map[uint64]func(T)), channels: make(map[uint64]chan T), effects: make(map[uint64]func(T))}
 	if name != "" {
-		var zero T
-		key := signalTypeKey(scope, name, zero)
+		key := signalTypeKey(scope, name, signalTypeOf[T]())
 		signalsMu.Lock()
 		if _, exists := signals[key]; exists {
 			signalsMu.Unlock()

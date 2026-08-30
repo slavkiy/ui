@@ -31,8 +31,8 @@ type Element struct {
 }
 
 type Props struct {
-	Width  int16 // 100% relative to the parent
-	Height int16 // 100% too
+	Width  int16 // percentage of viewport width, e.g. 50 => 50% of screen width
+	Height int16 // percentage of viewport height, e.g. 25 => 25% of screen height
 
 	Visible bool
 	Clip    bool
