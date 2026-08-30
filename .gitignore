@@ -1,0 +1,27 @@
+# VS Code / editor
+.vscode/
+*.code-workspace
+
+# Node extension build artifacts
+node_modules/
+out/
+*.vsix
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Go build artifacts
+/bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+
+# Temporary / local files
+*.tmp
+*.bak
+*.swp
+*.log

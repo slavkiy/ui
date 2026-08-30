@@ -9,6 +9,8 @@ const (
 	Down                        // 1000
 )
 
+const Center Alignment = 0
+
 func align(a, b Alignment) Alignment {
 	result := a
 

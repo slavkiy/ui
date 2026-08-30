@@ -1,20 +1,57 @@
 package reactive
 
 import (
+	"reflect"
+	"strings"
 	"sync"
 )
 
 var (
-	// Signals stores signals registered by name.
+	// Signals stores signals registered by package-qualified name and runtime type.
 	signals   = make(map[string]any)
 	signalsMu sync.RWMutex
 )
 
+func normalizeScope(scope string) string {
+	scope = strings.TrimSpace(scope)
+	scope = strings.ReplaceAll(scope, "\\", "/")
+	scope = strings.Trim(scope, "/")
+	scope = strings.TrimPrefix(scope, ".")
+	scope = strings.TrimSuffix(scope, ".")
+	return scope
+}
+
+func signalKey(scope, name string) string {
+	if name == "" {
+		return ""
+	}
+	scope = normalizeScope(scope)
+	if scope == "" {
+		return name
+	}
+	return scope + "::" + name
+}
+
+func signalTypeKey(scope, name string, t any) string {
+	key := signalKey(scope, name)
+	if key == "" {
+		return ""
+	}
+	return key + ":" + reflect.TypeOf(t).String()
+}
+
 // GetSignal returns the named signal when it has the requested type.
 func GetSignal[T any](name string) *Signal[T] {
+	return GetSignalInScope[T]("", name)
+}
+
+// GetSignalInScope returns a signal by explicit scope, e.g. app/internal::name.
+func GetSignalInScope[T any](scope, name string) *Signal[T] {
+	var zero T
+	key := signalTypeKey(scope, name, zero)
 	signalsMu.RLock()
 	defer signalsMu.RUnlock()
-	value, ok := signals[name]
+	value, ok := signals[key]
 	if !ok {
 		return nil
 	}
@@ -40,10 +77,21 @@ type Signal[T any] struct {
 
 // NewSignal creates a signal with an initial value and registers it by name.
 func NewSignal[T any](name string, value T) *Signal[T] {
+	return NewSignalInScope[T]("", name, value)
+}
+
+// NewSignalInScope creates a signal in an explicit scope such as app/internal::name.
+func NewSignalInScope[T any](scope, name string, value T) *Signal[T] {
 	s := &Signal[T]{value: value, listeners: make(map[uint64]func(T)), channels: make(map[uint64]chan T), effects: make(map[uint64]func(T))}
-	if name == "" {
+	if name != "" {
+		var zero T
+		key := signalTypeKey(scope, name, zero)
 		signalsMu.Lock()
-		signals[name] = s
+		if _, exists := signals[key]; exists {
+			signalsMu.Unlock()
+			panic("reactive: duplicate signal registration for same scope/name/type: " + key)
+		}
+		signals[key] = s
 		signalsMu.Unlock()
 	}
 	return s
@@ -58,6 +106,10 @@ func (s *Signal[T]) Get() T {
 
 // Set replaces the signal's value and notifies its subscribers.
 func (s *Signal[T]) Set(value T) {
+	if s == nil {
+		return
+	}
+
 	s.mu.Lock()
 	s.value = value
 	listeners := make([]func(T), 0, len(s.listeners))
@@ -92,15 +144,16 @@ func (s *Signal[T]) Set(value T) {
 
 // Update replaces the signal's value with the result of applying fn to it.
 func (s *Signal[T]) Update(fn func(T) T) {
-	if fn == nil {
+	if s == nil || fn == nil {
 		return
 	}
-	s.Set(fn(s.Get()))
+	current := s.Get()
+	s.Set(fn(current))
 }
 
 // Subscribe registers a callback that receives each new signal value.
 func (s *Signal[T]) Subscribe(fn func(T)) *Subscription {
-	if fn == nil {
+	if s == nil || fn == nil {
 		return &Subscription{}
 	}
 	s.mu.Lock()
@@ -117,6 +170,9 @@ func (s *Signal[T]) Subscribe(fn func(T)) *Subscription {
 
 // SubscribeChan returns a channel that receives signal updates and its subscription.
 func (s *Signal[T]) SubscribeChan(bufferSize uint) (<-chan T, *Subscription) {
+	if s == nil {
+		return nil, &Subscription{}
+	}
 	s.mu.Lock()
 	id := s.nextID
 	s.nextID++

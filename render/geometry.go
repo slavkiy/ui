@@ -2,9 +2,7 @@ package render
 
 import (
 	"fmt"
-	"log"
 	"math"
-	"runtime"
 	"strconv"
 	"strings"
 )
@@ -266,8 +264,6 @@ type Color struct {
 func Hex(s string) Color {
 	color, err := parseHex(s)
 	if err != nil {
-		_, file, line, _ := runtime.Caller(1)
-		log.Printf("%s:%d: invalid color %q: %v", file, line, s, err)
 		return Hex("#e100ff")
 	}
 	return color
