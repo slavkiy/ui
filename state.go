@@ -1,27 +1,33 @@
 package ui
 
 import (
-	"sync"
-
 	. "github.com/slavkiy/ui/reactive"
 	. "github.com/slavkiy/ui/widget"
 )
 
-var once sync.Once
-
 var signalState = NewSignal[Widget]("telefy/ui::State", Text("Home page slavkiy/ui").Align(Center))
 
 func State(w Widget) {
-	once.Do(func() {
-		go start()
-	})
 	signalState.Set(w)
 }
 
-func start() {
-	ch, sub := signalState.SubscribeChan(1024)
-	defer sub.Unsubscribe()
-	for w := range ch {
+type app struct {
+	sub *Subscription
+	sch <-chan Widget
+}
+
+func NewApp() *app {
+	ch, sub := signalState.SubscribeChan(10240)
+
+	return &app{
+		sub: sub,
+		sch: ch,
+	}
+}
+
+func (a *app) Run() {
+	defer a.sub.Unsubscribe()
+	for w := range a.sch {
 		_ = w
 	}
 }

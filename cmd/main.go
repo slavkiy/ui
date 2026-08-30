@@ -6,9 +6,13 @@ import (
 )
 
 func main() {
+	app := ui.NewApp()
+
 	ui.State(
 		Column(
 			Text("Hello").Align(Up, Left),
 		).Align(Center),
 	)
+
+	app.Run()
 }
