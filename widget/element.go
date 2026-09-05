@@ -36,6 +36,9 @@ type Props struct {
 	Width  int16 // percentage of viewport width, e.g. 50 => 50% of screen width
 	Height int16 // percentage of viewport height, e.g. 25 => 25% of screen height
 
+	OffsetX int32
+	OffsetY int32
+
 	Visible bool
 	Clip    bool
 	Opacity float32 // 0.0 to 1.0
@@ -101,6 +104,17 @@ func (e *Element) Opacity(v float32) *Element {
 func (e *Element) Size(width, height int16) *Element {
 	e.Props.Width = width
 	e.Props.Height = height
+	return e
+}
+
+func (e *Element) Offset(x, y int32) *Element {
+	e.Props.OffsetX = x
+	e.Props.OffsetY = y
+	return e
+}
+
+func (e *Element) Layer(layer int16) *Element {
+	e.Props.Layer = layer
 	return e
 }
 

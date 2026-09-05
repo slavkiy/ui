@@ -97,8 +97,15 @@ type Signal[T any] struct {
 }
 
 // NewSignal creates a signal with an initial value and registers it by name.
-func NewSignal[T any](name string, value T) *Signal[T] {
-	return NewSignalInScope[T]("", name, value)
+func NewSignal[T any](name string, value ...T) *Signal[T] {
+	var v T
+	if len(value) == 1 {
+		v = value[0]
+	}
+	if len(value) > 1 {
+		panic("reactive: NewSignal expects at most one initial value")
+	}
+	return NewSignalInScope[T]("", name, v)
 }
 
 // NewSignalInScope creates a signal in an explicit scope such as app/internal::name.

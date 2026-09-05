@@ -1,0 +1,4 @@
+github.com/deploymenttheory/go-bindings-macosplatform v0.19.0 h1:EneTf9nsrMctVCLZMCW9LnZDKt7F3DLv2uGu3e5udOQ=
+github.com/deploymenttheory/go-bindings-macosplatform v0.19.0/go.mod h1:TKz+cm9CMYzkgJVACmqYmQMjOKwcdJ/G8HxWa5+H9rQ=
+github.com/ebitengine/purego v0.10.2 h1:W809HbnvzAxgdm+aOvlSekrM16wGCdT/e76+9tS7gzE=
+github.com/ebitengine/purego v0.10.2/go.mod h1:iIjxzd6CiRiOG0UyXP+V1+jWqUXVjPKLAI0mRfJZTmQ=
